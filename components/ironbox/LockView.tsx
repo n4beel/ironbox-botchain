@@ -1,20 +1,33 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatEther, type Address } from "viem";
 import { useChainId, useReadContract } from "wagmi";
 import Panel from "@/components/ui/Panel";
 import Badge from "@/components/ui/Badge";
 import Spinner from "@/components/ui/Spinner";
-import { addressUrl, isBotChainId } from "@/lib/botchain/chain";
+import { activeBotChain, addressUrl, isBotChainId } from "@/lib/botchain/chain";
 import { getDeployment } from "@/lib/botchain/deployment";
 import { ironboxAbi } from "@/lib/botchain/abi";
 import { formatUnlockAt, isUnlocked, type IronboxLock } from "@/lib/ironbox";
 import WithdrawButton from "./WithdrawButton";
 
+// The chain's own symbol. Hardcoding "BOT" labelled every testnet amount as mainnet
+// currency, which is the confusion the network badge exists to prevent.
+const SYMBOL = activeBotChain.nativeCurrency.symbol;
+
 export default function LockView({ id }: { id: string | bigint }) {
   const chainId = useChainId();
   const deployment = isBotChainId(chainId) ? getDeployment(chainId) : null;
+
+  // A lock whose unlock time passes while this page is open must start offering the withdrawal
+  // without a manual refresh. `isUnlocked` reads the clock, so without a tick the page simply
+  // keeps saying "Locked" forever.
+  const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    const t = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 1_000);
+    return () => clearInterval(t);
+  }, []);
 
   const numericId = useMemo(() => {
     try {
@@ -101,7 +114,7 @@ export default function LockView({ id }: { id: string | bigint }) {
     amount: data.amount,
   };
 
-  const unlocked = isUnlocked(lock);
+  const unlocked = isUnlocked(lock, nowSec);
 
   const statusVariant = lock.withdrawn
     ? "default"
@@ -141,7 +154,7 @@ export default function LockView({ id }: { id: string | bigint }) {
                 className="text-[18px] font-semibold tracking-tight"
                 style={{ color: "var(--text-primary)" }}
               >
-                {formatEther(lock.amount)} BOT
+                {formatEther(lock.amount)} {SYMBOL}
               </span>
             </div>
 

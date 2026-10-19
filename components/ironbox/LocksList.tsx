@@ -7,10 +7,14 @@ import { useAccount, useChainId, usePublicClient } from "wagmi";
 import Panel from "@/components/ui/Panel";
 import Spinner from "@/components/ui/Spinner";
 import Badge from "@/components/ui/Badge";
-import { isBotChainId } from "@/lib/botchain/chain";
+import { activeBotChain, isBotChainId } from "@/lib/botchain/chain";
 import { getDeployment, isDeployed } from "@/lib/botchain/deployment";
 import { ironboxAbi } from "@/lib/botchain/abi";
 import { formatUnlockAt } from "@/lib/ironbox";
+
+// The chain's own symbol. Hardcoding "BOT" labelled every testnet amount as mainnet
+// currency, which is the confusion the network badge exists to prevent.
+const SYMBOL = activeBotChain.nativeCurrency.symbol;
 
 type LockEventItem = {
   id: bigint;
@@ -177,7 +181,7 @@ export default function LocksList() {
                   </Badge>
                 </div>
                 <span className="font-mono text-[14px] font-semibold" style={{ color: "var(--accent)" }}>
-                  {formatEther(item.amount)} BOT
+                  {formatEther(item.amount)} {SYMBOL}
                 </span>
               </div>
 
