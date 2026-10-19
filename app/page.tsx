@@ -1,36 +1,23 @@
 import PageShell from "@/components/layout/PageShell";
 import BotChainGate from "@/components/botchain/BotChainGate";
-import Panel from "@/components/ui/Panel";
-import { app } from "@/lib/app-config";
+import LockForm from "@/components/ironbox/LockForm";
+import { NAV } from "@/lib/nav";
 
-/**
- * Scaffold home page. Replace the body; keep the shape.
- *
- * The shape is the point: read-only content sits outside `BotChainGate`, and only the part that
- * actually transacts sits inside it. A visitor with no wallet should still see what the app is.
- */
+export const metadata = {
+  title: "Lock BOT — Ironbox",
+  description: "Lock BOT until a date. No early withdrawal, for anyone.",
+};
+
 export default function Home() {
   return (
-    <PageShell title={app.name} description={app.tagline}>
-      <div className="flex flex-col gap-4">
-        <Panel>
-          <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            This is the template scaffold. Rewrite <code>lib/app-config.ts</code>,{" "}
-            <code>lib/botchain/abi.ts</code> and this page.
-          </p>
-        </Panel>
-
-        <BotChainGate>
-          <Panel>
-            <p className="text-[11px] uppercase tracking-[0.04em]" style={{ color: "var(--text-secondary)" }}>
-              The one transaction
-            </p>
-            <p className="mt-2 text-[13px]" style={{ color: "var(--text-primary)" }}>
-              {app.theTx}
-            </p>
-          </Panel>
-        </BotChainGate>
-      </div>
+    <PageShell
+      nav={NAV}
+      title="Lock BOT"
+      description="Lock BOT for a beneficiary address until a specified date. No early withdrawal, for anyone."
+    >
+      <BotChainGate noWalletNote="Viewing a lock by ID still works without a wallet.">
+        <LockForm />
+      </BotChainGate>
     </PageShell>
   );
 }
